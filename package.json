@@ -1,0 +1,36 @@
+{
+  "name": "jsa-alexandrite-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "App.js",
+  "scripts": {
+    "test": "mocha 'tests/**/*.js' --exit",
+    "lint": "eslint .",
+    "start": "node ./src/App.js",
+    "start:dev": "nodemon ./src/App.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/green-fox-academy/jsa-alexandrite-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/green-fox-academy/jsa-alexandrite-backend/issues"
+  },
+  "homepage": "https://github.com/green-fox-academy/jsa-alexandrite-backend#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mysql2": "^2.0.2",
+    "yarn": "^1.21.1"
+  },
+  "devDependencies": {
+    "assert": "^2.0.0",
+    "eslint": "^6.7.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.19.1",
+    "mocha": "^6.2.2",
+    "nodemon": "^2.0.2"
+  }
+}
