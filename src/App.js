@@ -12,6 +12,7 @@ db.once('open', () => {
 passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+const { users } = require('./controller');
 
 const { PORT } = process.env;
 
