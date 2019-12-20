@@ -12,6 +12,7 @@ db.once('open', () => {
 passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+const { users } = require('./controller');
 
 const { PORT } = process.env;
 const app = express();
@@ -21,6 +22,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/investments', investments);
+app.use('/users', users);
 
 app.get('/', (req, res) => {
   res.send('Hello World');
