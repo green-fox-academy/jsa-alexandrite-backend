@@ -3,27 +3,27 @@ const users = require('../data/users');
 
 const router = Router();
 
-
 // eslint-disable-next-line consistent-return
-async function loginUser(req, res, next) {
-  const { userName, passWord } = req.body;
-  if (!userName || !passWord) {
+async function loginUser(req, res) {
+  const { username, password } = req.body;
+  if (!username || !password) {
     return res.sendStatus(400);
   }
   try {
     const [user] = users;
-    if (user.userName === userName && user.passWord === passWord) {
-      const accessTocken = 'little-pony';
-      const { userId } = user;
-      return res.send({ userId, accessTocken });
+    if (user) {
+      if (user.password === password) {
+        const accessToken = 'little-pony';
+        return res.send({ accessToken });
+      }
+      return res.status(401).send({ message: 'wrong password' });
     }
-    return res.status(400).send({ message: 'Wrong password' });
+    res.sendStatus(404).send({ message: 'user not exists' });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.sendStatus(500);
   }
 }
-
-
 router.post('/login', loginUser);
 
 module.exports = router;
