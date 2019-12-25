@@ -1,6 +1,11 @@
+const jwt = require('jsonwebtoken');
+const jwtVerifer = require('express-jwt');
 const { errors } = require('passport-local-mongoose');
 const { Router } = require('express');
 const { User } = require('../models');
+
+const secret = 'secret';
+const expirationDate = Math.floor(Date.now() / 1000) + 30;
 
 const router = Router();
 
@@ -10,7 +15,7 @@ const loginUser = async (req, res) => {
     const auth = User.authenticate();
     const { user, error } = await auth(username, password);
     if (user) {
-      const accessToken = 'little-pony';
+      const accessToken = jwt.sign({ name: user.username, exp: expirationDate }, secret);
       return res.send({ accessToken });
     }
     throw error;
@@ -24,5 +29,13 @@ const loginUser = async (req, res) => {
 };
 
 router.post('/login', loginUser);
+router.get('/account', jwtVerifer({ secret }), (req, res) => {
+  res.send({
+    name: req.user.name,
+    exp: req.user.expirationDate,
+    now: Date.now(),
+    message: 'congratulations you made it home',
+  });
+});
 
 module.exports = router;
