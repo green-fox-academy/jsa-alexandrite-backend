@@ -1,5 +1,6 @@
+const { errors } = require('passport-local-mongoose');
 const { Router } = require('express');
-const users = require('../data/users');
+const { User } = require('../models');
 
 const router = Router();
 
@@ -10,17 +11,18 @@ async function loginUser(req, res) {
     return res.sendStatus(400);
   }
   try {
-    const [user] = users;
+    const auth = User.authenticate();
+    const { user, error } = await auth(username, password);
     if (user) {
-      if (user.password === password) {
-        const accessToken = 'little-pony';
-        return res.send({ accessToken });
-      }
-      return res.status(401).send({ message: 'wrong password' });
+      const accessToken = 'little-pony';
+      return res.send({ accessToken });
     }
-    res.sendStatus(404).send({ message: 'user not exists' });
+    throw error;
   } catch (err) {
     console.error(err);
+    if (err instanceof errors.AuthenticationError) {
+      return res.status(401).send(err);
+    }
     res.sendStatus(500);
   }
 }

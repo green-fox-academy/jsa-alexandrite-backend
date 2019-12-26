@@ -1,9 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const passport = require('passport');
-const investments = require('./controller/investments');
 const { db, User } = require('./models');
-const { users } = require('./controller');
+const { users, investments } = require('./controller');
 
 const { PORT } = process.env;
 
