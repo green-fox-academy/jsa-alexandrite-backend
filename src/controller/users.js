@@ -4,7 +4,7 @@ const { errors } = require('passport-local-mongoose');
 const { Router } = require('express');
 const { User } = require('../models');
 
-const secret = 'secret';
+const secret = process.env.ACCESS_TOKEN_SECRET;
 const expirationDate = Math.floor(Date.now() / 1000) + 30;
 
 const router = Router();
