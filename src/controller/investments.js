@@ -1,5 +1,5 @@
 const express = require('express');
-const userInvestments = require('../data/data');
+const userInvestments = require('../models/data');
 
 const investments = express.Router();
 
