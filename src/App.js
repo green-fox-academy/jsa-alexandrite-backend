@@ -3,6 +3,9 @@ const express = require('express');
 const passport = require('passport');
 const investments = require('./controller/investments');
 const { db, User } = require('./models');
+const { users } = require('./controller');
+
+const { PORT } = process.env;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
@@ -12,9 +15,7 @@ db.once('open', () => {
 passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
-const { users } = require('./controller');
 
-const { PORT } = process.env;
 const app = express();
 
 app.use(express.json());
