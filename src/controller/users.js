@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const jwtVerifer = require('express-jwt');
+const jwtVerify = require('express-jwt');
 const { errors } = require('passport-local-mongoose');
 const { Router } = require('express');
 const { User } = require('../models');
@@ -29,7 +29,7 @@ const loginUser = async (req, res) => {
 };
 
 router.post('/login', loginUser);
-router.get('/account', jwtVerifer({ secret }), (req, res) => {
+router.get('/account', jwtVerify({ secret }), (req, res) => {
   res.send({
     name: req.user.name,
     exp: req.user.expirationDate,
