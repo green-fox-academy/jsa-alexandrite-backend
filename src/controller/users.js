@@ -4,13 +4,9 @@ const { User } = require('../models');
 
 const router = Router();
 
-// eslint-disable-next-line consistent-return
-async function loginUser(req, res) {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.sendStatus(400);
-  }
+const loginUser = async (req, res) => {
   try {
+    const { username, password } = req.body;
     const auth = User.authenticate();
     const { user, error } = await auth(username, password);
     if (user) {
@@ -23,9 +19,10 @@ async function loginUser(req, res) {
     if (err instanceof errors.AuthenticationError) {
       return res.status(401).send(err);
     }
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
-}
+};
+
 router.post('/login', loginUser);
 
 module.exports = router;
