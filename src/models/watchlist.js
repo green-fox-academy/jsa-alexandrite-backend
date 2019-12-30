@@ -9,4 +9,7 @@ const watchlistSchema = new Schema({
 });
 
 const Watchlist = model('Watchlist', watchlistSchema);
-module.exports = Watchlist;
+module.exports = {
+  Watchlist,
+  watchlistSchema,
+};

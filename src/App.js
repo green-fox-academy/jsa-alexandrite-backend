@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const passport = require('passport');
+const watchlists = require('./controller/watchlists');
 const { db, User } = require('./models');
 const { users, investments, account } = require('./controller');
 
@@ -23,6 +24,7 @@ app.use(passport.session());
 app.use('/investments', investments);
 app.use('/users', users);
 app.use('/account', account);
+app.use('/watchlists', watchlists);
 
 app.get('/', (req, res) => {
   res.send('Hello World');
