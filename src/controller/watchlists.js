@@ -1,12 +1,14 @@
 const express = require('express');
+const jwt = require('express-jwt');
 const { User } = require('../models');
 
 const watchlists = express.Router();
+const { ACCESS_TOKEN_SECRET: secret } = process.env;
 
-watchlists.post('/backup', async (req, res) => {
-  const id = '5e01dc0fd399fd162f3e5788';
+watchlists.post('/backup', jwt({ secret }), async (req, res) => {
   try {
-    const user = await User.findById(id);
+    const { _id } = req.user;
+    const user = await User.findById(_id);
     if (!Array.isArray(req.body)) return res.sendStatus(400);
     if (!user) return res.sendStatus(404);
     user.watchlists = req.body;
@@ -17,10 +19,10 @@ watchlists.post('/backup', async (req, res) => {
   }
 });
 
-watchlists.get('/restore', async (req, res) => {
-  const id = '5e01dc0fd399fd162f3e5788';
+watchlists.get('/restore', jwt({ secret }), async (req, res) => {
   try {
-    const user = await User.findById(id);
+    const { _id } = req.user;
+    const user = await User.findById(_id);
     if (!user) return res.sendStatus(400);
     return res.send(user.watchlists);
   } catch (err) {
