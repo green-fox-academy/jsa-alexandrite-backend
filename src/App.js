@@ -1,9 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const passport = require('passport');
-const watchlists = require('./controller/watchlists');
 const { db, User } = require('./models');
-const { users, investments, account } = require('./controller');
+const {
+  users,
+  investments,
+  account,
+  watchlists,
+} = require('./controller');
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
