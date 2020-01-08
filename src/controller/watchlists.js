@@ -7,8 +7,8 @@ const { ACCESS_TOKEN_SECRET: secret } = process.env;
 
 watchlists.post('/backup', jwt({ secret }), async (req, res) => {
   try {
-    const { _id } = req.user;
-    const user = await User.findById(_id);
+    const { id } = req.user;
+    const user = await User.findById(id);
     if (!Array.isArray(req.body)) return res.sendStatus(400);
     if (!user) return res.sendStatus(404);
     user.watchlists = req.body;
@@ -21,8 +21,9 @@ watchlists.post('/backup', jwt({ secret }), async (req, res) => {
 
 watchlists.get('/restore', jwt({ secret }), async (req, res) => {
   try {
-    const { _id } = req.user;
-    const user = await User.findById(_id);
+    const { id } = req.user;
+    // console.log(req.user);
+    const user = await User.findById(id);
     if (!user) return res.sendStatus(400);
     return res.send(user.watchlists);
   } catch (err) {
