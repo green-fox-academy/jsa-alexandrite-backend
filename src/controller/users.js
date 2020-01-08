@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const jwtVerifier = require('express-jwt');
 const { errors } = require('passport-local-mongoose');
 const { Router } = require('express');
-const { User } = require('../models');
+const { User, Transaction } = require('../models');
 
 const secret = process.env.ACCESS_TOKEN_SECRET;
 
@@ -34,6 +34,24 @@ router.get('/account', jwtVerifier({ secret }), (req, res) => {
     id: req.user.id,
     message: 'congratulations you made it home',
   });
+});
+
+router.get('/transactions', jwtVerifier({ secret }), async (req, res) => {
+  try {
+    const { id } = req.user;
+    const transactions = (await Transaction.find({ user: id }))
+      .map((trans) => {
+        const { _id, ...rest } = trans.toJSON();
+        return {
+          ...rest,
+          id: _id,
+        };
+      });
+    res.send(transactions);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
 });
 
 module.exports = router;
