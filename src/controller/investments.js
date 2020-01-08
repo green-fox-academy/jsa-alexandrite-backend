@@ -1,15 +1,30 @@
 const express = require('express');
-const userInvestments = require('../models/data');
+const jwtVerifier = require('express-jwt');
+
+const secret = process.env.ACCESS_TOKEN_SECRET;
 
 const investments = express.Router();
+const { User } = require('../models');
 
-investments.get('/user/:uid', (req, res) => {
-  const { uid } = req.params;
-  const userData = userInvestments.find((data) => data.userId === uid);
-  if (userData) {
-    return res.send(userData);
+investments.get('/user', jwtVerifier({ secret }), async (req, res) => {
+  try {
+    const { id } = req.user;
+    const user = await User.findOne({ _id: id }, '-_id investments');
+    const result = user.investments.map(({
+      _id,
+      symbol,
+      shares,
+      sector,
+    }) => ({
+      id: _id,
+      symbol,
+      shares,
+      sector,
+    }));
+    return res.send(result);
+  } catch (err) {
+    return res.sendStatus(500);
   }
-  return res.sendStatus(404);
 });
 
 module.exports = investments;

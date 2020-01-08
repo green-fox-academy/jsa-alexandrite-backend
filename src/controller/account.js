@@ -8,12 +8,8 @@ const { User } = require('../models');
 
 account.get('/user', jwtVerifier({ secret }), async (req, res) => {
   try {
-    const { _id } = req.user;
-    const user = await User.find({ _id }, {
-      _id: false,
-      username: true,
-      balance: true,
-    });
+    const { id } = req.user;
+    const user = await User.find({ _id: id }, '-_id username balance');
     return res.send(user);
   } catch (err) {
     return res.sendStatus(500);

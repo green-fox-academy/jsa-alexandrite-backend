@@ -5,7 +5,6 @@ const { Router } = require('express');
 const { User } = require('../models');
 
 const secret = process.env.ACCESS_TOKEN_SECRET;
-const expirationDate = Math.floor(Date.now() / 1000) + 30;
 
 const router = Router();
 
@@ -15,7 +14,8 @@ const loginUser = async (req, res) => {
     const auth = User.authenticate();
     const { user, error } = await auth(username, password);
     if (user) {
-      const accessToken = jwt.sign({ name: user.username, exp: expirationDate }, secret);
+      // eslint-disable-next-line no-underscore-dangle
+      const accessToken = jwt.sign({ id: user._id }, secret, { expiresIn: '7days' });
       return res.send({ accessToken });
     }
     throw error;
@@ -31,9 +31,7 @@ const loginUser = async (req, res) => {
 router.post('/login', loginUser);
 router.get('/account', jwtVerifier({ secret }), (req, res) => {
   res.send({
-    name: req.user.name,
-    exp: req.user.expirationDate,
-    now: Date.now(),
+    id: req.user.id,
     message: 'congratulations you made it home',
   });
 });
