@@ -10,7 +10,6 @@ watchlists.post('/backup', jwt({ secret }), async (req, res) => {
     const { id } = req.user;
     const user = await User.findById(id);
     if (!Array.isArray(req.body)) return res.sendStatus(400);
-    if (!user) return res.sendStatus(404);
     user.watchlists = req.body;
     const result = await user.save();
     return res.send(result.watchlists);
