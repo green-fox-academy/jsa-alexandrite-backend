@@ -23,7 +23,6 @@ watchlists.get('/restore', jwt({ secret }), async (req, res) => {
   try {
     const { id } = req.user;
     const user = await User.findById(id);
-    if (!user) return res.sendStatus(400);
     return res.send(user.watchlists);
   } catch (err) {
     return res.sendStatus(500);
