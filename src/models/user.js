@@ -10,6 +10,7 @@ const userSchema = new Schema({
   investments: [{
     symbol: String,
     shares: Number,
+    sector: String,
   }],
   watchlists: [Schema.Types.ObjectId],
 });
