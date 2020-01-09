@@ -3,9 +3,24 @@ const { Schema, model } = require('mongoose');
 const transactionSchema = new Schema({
   user: { type: Schema.Types.ObjectId, required: true },
   timestamp: { type: Date, default: Date.now },
-  shares: { type: Number, required: () => this.type !== 'topUp' },
-  price: { type: Number, required: () => this.type !== 'topUp' },
-  amount: { type: Number, required: () => this.type === 'topUp' },
+  shares: {
+    type: Number,
+    required() {
+      return this.type !== 'topUp';
+    },
+  },
+  price: {
+    type: Number,
+    required() {
+      return this.type !== 'topUp';
+    },
+  },
+  amount: {
+    type: Number,
+    required() {
+      return this.type === 'topUp';
+    },
+  },
   symbol: String,
   type: {
     type: String,
