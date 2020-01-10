@@ -22,12 +22,12 @@ account.post('/topup', jwtVerifier({ secret }), async (req, res) => {
     const { id } = req.user;
     const { topUp } = req.body;
     const balance = await User.findById(id, 'balance');
-    const result = balance.balance + topUp;
+    const result = balance.balance + parseInt(topUp, 10);
     try {
       await User.updateOne({ _id: id }, { $set: { balance: result } });
       const topUpTransaction = new Transaction({
         user: id,
-        amount: topUp,
+        amount: parseInt(topUp, 10),
         type: 'topUp',
         status: 'settled',
       });
