@@ -2,7 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const passport = require('passport');
 const { db, User } = require('./models');
-const { users, investments, account } = require('./controller');
+const {
+  users,
+  investments,
+  account,
+  watchlists,
+} = require('./controller');
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => {
@@ -23,6 +28,7 @@ app.use(passport.session());
 app.use('/investments', investments);
 app.use('/users', users);
 app.use('/account', account);
+app.use('/watchlists', watchlists);
 
 app.get('/', (req, res) => {
   res.send('Hello World');

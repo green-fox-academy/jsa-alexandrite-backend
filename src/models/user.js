@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const passportLocalMongoose = require('passport-local-mongoose');
+const { watchlistSchema } = require('./watchlist');
 
 const userSchema = new Schema({
   username: { type: String, required: true },
@@ -12,7 +13,7 @@ const userSchema = new Schema({
     shares: Number,
     sector: String,
   }],
-  watchlists: [Schema.Types.ObjectId],
+  watchlists: [watchlistSchema],
 });
 
 userSchema.plugin(passportLocalMongoose);
