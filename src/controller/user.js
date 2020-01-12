@@ -39,7 +39,8 @@ router.get('/account', jwtVerifier({ secret }), (req, res) => {
 router.get('/transactions', jwtVerifier({ secret }), async (req, res) => {
   try {
     const { id } = req.user;
-    const transactions = (await Transaction.find({ user: id }))
+    const { limit } = req.query;
+    const transactions = (await Transaction.find({ user: id }).limit(parseInt(limit, 10)))
       .map((trans) => {
         const { _id, ...rest } = trans.toJSON();
         return {
@@ -51,6 +52,16 @@ router.get('/transactions', jwtVerifier({ secret }), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
+  }
+});
+
+router.get('/profile', jwtVerifier({ secret }), async (req, res) => {
+  try {
+    const { id } = req.user;
+    const user = await User.findById(id, '-_id username balance');
+    return res.send(user);
+  } catch (err) {
+    return res.sendStatus(500);
   }
 });
 

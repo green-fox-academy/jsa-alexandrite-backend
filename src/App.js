@@ -3,7 +3,7 @@ const express = require('express');
 const passport = require('passport');
 const { db, User } = require('./models');
 const {
-  users,
+  user,
   investments,
   account,
   watchlists,
@@ -26,7 +26,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/investments', investments);
-app.use('/users', users);
+app.use('/user', user);
 app.use('/account', account);
 app.use('/watchlists', watchlists);
 
