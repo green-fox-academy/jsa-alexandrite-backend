@@ -26,8 +26,10 @@ const order = async (req, res) => {
       },
     );
     orderTransaction.save((err) => {
-      if (err) return res.status(500).send(err);
-      return res.status(201).send(orderTransaction);
+      if (err) {
+        return res.status(500).send(err);
+      }
+      return res.status(201).send('OK');
     });
   } catch (err) {
     console.error(err);
