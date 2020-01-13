@@ -22,21 +22,20 @@ const order = async (req, res) => {
     const price = data.quote.latestPrice;
     const { sector } = data.company;
     const user = await User.findById(id);
-    const { username, investments } = user;
+    const { investments } = user;
     const originalShares = investments.map((investment) => {
       if (investment.symbol === symbol) {
         return investment.shares;
       }
       return 0;
     });
+    let totalShares = 0;
     if (status === 'settled') {
       if (type === 'buy') {
-        // eslint-disable-next-line no-const-assign
-        originalShares += shares;
+        totalShares = shares + originalShares;
       } else if (type === 'sell') {
         if (originalShares >= shares) {
-          // eslint-disable-next-line no-const-assign
-          originalShares -= shares;
+          totalShares = originalShares - shares;
         } else {
           throw Error('Your stock shares are fewer than what you have');
         }
@@ -44,7 +43,12 @@ const order = async (req, res) => {
     }
     const orderTransaction = new Transaction(
       {
-        user: id, shares: originalShares, price, symbol, type, status,
+        user: id,
+        shares,
+        price,
+        symbol,
+        type,
+        status,
       },
     );
     orderTransaction.save((err) => {
@@ -53,24 +57,12 @@ const order = async (req, res) => {
       }
       return res.status(201).send('OK');
     });
-    const userInvestment = new User(
-      {
-        username,
-        balance,
-        investment: [{
-          symbol,
-          shares,
-          sector,
-          entryPrice: price,
-        }],
-      },
+    await User.updateOne({ _id: id }, { $set: { balance } });
+    await User.update(
+      { 'investments.shares': symbol },
+      { $set: { 'investments.$.shares': totalShares, 'investments.$.sector': sector } },
+      { upsert: true },
     );
-    User.save((err) => {
-      if (err) {
-        return res.status(500).send(err);
-      }
-      return res.status(201).send(userInvestment);
-    });
   } catch (err) {
     console.error(err);
   }
