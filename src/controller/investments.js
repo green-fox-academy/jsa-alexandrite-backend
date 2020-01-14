@@ -15,11 +15,13 @@ investments.get('/user', jwtVerifier({ secret }), async (req, res) => {
       symbol,
       shares,
       sector,
+      entryPrice,
     }) => ({
       id: _id,
       symbol,
       shares,
       sector,
+      entryPrice,
     }));
     return res.send(result);
   } catch (err) {

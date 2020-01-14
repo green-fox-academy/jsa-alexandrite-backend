@@ -11,6 +11,7 @@ const userSchema = new Schema({
     symbol: String,
     shares: Number,
     sector: String,
+    entryPrice: Number,
   }],
   watchlists: [Schema.Types.ObjectId],
 });
