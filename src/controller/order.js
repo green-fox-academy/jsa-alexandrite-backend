@@ -98,7 +98,7 @@ const order = async (req, res) => {
           );
           orderTransaction.save();
           // throw error('balance is not enough');
-          res.json('update fail');
+          res.json('update User failed');
           throw Error('Your balance is not enough');
         } catch (error) {
           console.error(error);
@@ -152,6 +152,7 @@ const order = async (req, res) => {
           );
           orderTransaction.save();
           // throw error ('stock shares are not enough');
+          res.json('update User failed');
           throw Error('Your stock shares are fewer than what you have');
         } catch (error) {
           console.error(error);
