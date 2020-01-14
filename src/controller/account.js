@@ -4,8 +4,7 @@ const jwtVerifier = require('express-jwt');
 const secret = process.env.ACCESS_TOKEN_SECRET;
 
 const account = express.Router();
-const { User } = require('../models');
-const { Transaction } = require('../models');
+const { User, Transaction } = require('../models');
 
 account.get('/user', jwtVerifier({ secret }), async (req, res) => {
   try {
@@ -20,22 +19,21 @@ account.get('/user', jwtVerifier({ secret }), async (req, res) => {
 account.post('/topup', jwtVerifier({ secret }), async (req, res) => {
   try {
     const { id } = req.user;
-    const { topUp } = req.body;
-    const balance = await User.findById(id, 'balance');
-    const result = balance.balance + parseInt(topUp, 10);
-    try {
-      await User.updateOne({ _id: id }, { $set: { balance: result } });
-      const topUpTransaction = new Transaction({
-        user: id,
-        amount: parseInt(topUp, 10),
-        type: 'topUp',
-        status: 'settled',
-      });
-      await topUpTransaction.save();
-      return res.json({ balance: result });
-    } catch (err) {
-      return res.sendStatus(500);
+    const { amount } = req.body;
+    if (amount < 0) {
+      return res.status(400).send('Sorry, top-up amount should be over 0');
     }
+    const { balance } = await User.findById(id, 'balance');
+    const result = balance + amount;
+    await User.updateOne({ _id: id }, { $set: { balance: result } });
+    const topUpTransaction = new Transaction({
+      user: id,
+      amount,
+      type: 'topUp',
+      status: 'settled',
+    });
+    await topUpTransaction.save();
+    return res.json({ balance: result });
   } catch (err) {
     return res.sendStatus(500);
   }
