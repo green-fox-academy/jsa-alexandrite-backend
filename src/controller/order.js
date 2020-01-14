@@ -14,10 +14,26 @@ const order = async (req, res) => {
     const {
       shares, symbol, type,
     } = req.body;
+
     const url = new URL(`${API_URL}/stock/${symbol}/batch`);
     url.searchParams.append('types', 'quote,company');
     url.searchParams.append('token', API_KEY);
-    const data = await (await fetch(url)).json();
+
+    const data = await (await fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          switch (response.status) {
+            case 401:
+              throw Error(`The stock ${symbol} you are searching for does not exist`);
+            default:
+              throw Error('Oop! there is something wrong with our app');
+          }
+        }
+        return response.json();
+      })
+      .catch((error) => error)
+    );
+
     const { id } = req.user;
     const price = data.quote.latestPrice;
     const { sector } = data.company;
@@ -29,6 +45,7 @@ const order = async (req, res) => {
       }
       return 0;
     });
+    const originalShare = originalShares[0];
     // compare shares with orginalShares
     let updatedBalance = 0;
     let updatedShares = 0;
@@ -36,91 +53,112 @@ const order = async (req, res) => {
     if (type === 'buy') {
       if (balance >= stockTotalValue) {
         updatedBalance = balance - stockTotalValue;
-        updatedShares = originalShares + shares;
+        updatedShares = originalShare + shares;
         // update User balance / investment shares & set status to 'settled'
-        const orderTransaction = new Transaction(
-          {
-            user: id,
-            shares,
-            price,
-            symbol,
-            type,
-            status: 'settled',
-          },
-        );
-        orderTransaction.save();
-        User.updateOne({ _id: id }, { $set: { balance } });
-        User.updateMany(
-          { _id: id, 'investments.symbol': symbol },
-          {
-            $set: {
-              'investments.$.shares': updatedShares,
-              'investments.$.sector': sector,
-              'investments.$.entryPrice': price,
+        try {
+          const orderTransaction = new Transaction(
+            {
+              user: id,
+              shares,
+              price,
+              symbol,
+              type,
+              status: 'settled',
             },
-          },
-          { upsert: true },
-        );
-      }
-      // failed
-      const orderTransaction = new Transaction(
-        {
-          user: id,
-          shares,
-          price,
-          symbol,
-          type,
-          status: 'failed',
-        },
-      );
-      orderTransaction.save();
-      // throw error('balance is not enough');
-      throw Error('Your balance is not enough');
-    } else if (type === 'sell') {
-      if (originalShares >= shares) {
-        updatedBalance = balance + stockTotalValue;
-        updatedShares = originalShares - shares;
-        // update User balance / investment shares & set status to 'settled'
-        const orderTransaction = new Transaction(
-          {
-            user: id,
-            shares,
-            price,
-            symbol,
-            type,
-            status: 'settled',
-          },
-        );
-        orderTransaction.save();
-        User.updateOne({ _id: id }, { $set: { balance: updatedBalance } });
-        User.updateMany(
-          { 'investments.symbol': symbol },
-          {
-            $set: {
-              'investments.$.shares': updatedShares,
-              'investments.$.sector': sector,
-              'investments.$.entryPrice': price,
+          );
+          orderTransaction.save();
+          await User.updateOne({ _id: id }, { $set: { balance: updatedBalance } });
+          await User.updateMany(
+            { _id: id, 'investments.symbol': symbol },
+            {
+              $set: {
+                'investments.$.shares': updatedShares,
+                'investments.$.sector': sector,
+                'investments.$.entryPrice': price,
+              },
             },
-          },
-          { upsert: true },
-        );
+            { upsert: true },
+          );
+          res.status(201).json('save and update successfully');
+        } catch (error) {
+          console.error(error);
+        }
       } else {
         // failed
-        const orderTransaction = new Transaction(
-          {
-            user: id,
-            shares,
-            price,
-            symbol,
-            type,
-            status: 'failed',
-          },
-        );
-        orderTransaction.save();
-        // throw error ('stock shares are not enough');
-        throw Error('Your stock shares are fewer than what you have');
+        try {
+          const orderTransaction = new Transaction(
+            {
+              user: id,
+              shares,
+              price,
+              symbol,
+              type,
+              status: 'failed',
+            },
+          );
+          orderTransaction.save();
+          // throw error('balance is not enough');
+          res.json('update fail');
+          throw Error('Your balance is not enough');
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    } else if (type === 'sell') {
+      if (originalShare >= shares) {
+        updatedBalance = balance + stockTotalValue;
+        updatedShares = originalShare - shares;
+        // update User balance / investment shares & set status to 'settled'
+        try {
+          const orderTransaction = new Transaction(
+            {
+              user: id,
+              shares,
+              price,
+              symbol,
+              type,
+              status: 'settled',
+            },
+          );
+          orderTransaction.save();
+          await User.updateOne({ _id: id }, { $set: { balance: updatedBalance } });
+          await User.updateMany(
+            { _id: id, 'investments.symbol': symbol },
+            {
+              $set: {
+                'investments.$.shares': updatedShares,
+                'investments.$.sector': sector,
+                'investments.$.entryPrice': price,
+              },
+            },
+            { upsert: true },
+          );
+          res.status(201).json('create and update successfully');
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        // failed
+        try {
+          const orderTransaction = new Transaction(
+            {
+              user: id,
+              shares,
+              price,
+              symbol,
+              type,
+              status: 'failed',
+            },
+          );
+          orderTransaction.save();
+          // throw error ('stock shares are not enough');
+          throw Error('Your stock shares are fewer than what you have');
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
+    res.status(201);
   } catch (error) {
     console.error(error);
     res.status(500);
