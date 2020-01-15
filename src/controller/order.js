@@ -7,7 +7,7 @@ const User = require('../models/user');
 const router = Router();
 
 const secret = process.env.ACCESS_TOKEN_SECRET;
-const { API_URL, API_KEY } = process.env;
+const { API_PROD_URL, API_PROD_KEY } = process.env;
 
 const order = async (req, res) => {
   try {
@@ -15,9 +15,9 @@ const order = async (req, res) => {
       shares, symbol, type,
     } = req.body;
 
-    const url = new URL(`${API_URL}/stock/${symbol}/batch`);
+    const url = new URL(`${API_PROD_URL}/stock/${symbol}/batch`);
     url.searchParams.append('types', 'quote,company');
-    url.searchParams.append('token', API_KEY);
+    url.searchParams.append('token', API_PROD_KEY);
 
     const data = await (await fetch(url)
       .then((response) => {
@@ -31,7 +31,6 @@ const order = async (req, res) => {
         }
         return response.json();
       })
-      .catch((error) => error)
     );
 
     const { id } = req.user;
@@ -93,6 +92,7 @@ const order = async (req, res) => {
           res.status(201).json('save and update successfully');
         } catch (error) {
           console.error(error);
+          return res.sendStatus(500);
         }
       } else {
         // failed
@@ -109,10 +109,9 @@ const order = async (req, res) => {
           );
           orderTransaction.save();
           // throw error('balance is not enough');
-          res.json('update User failed');
-          throw Error('Your balance is not enough');
+          throw new Error('Your balance is not enough');
         } catch (error) {
-          console.error(error);
+          return res.status(400).send({ message: error.message });
         }
       }
     } else if (type === 'sell') {
@@ -149,6 +148,7 @@ const order = async (req, res) => {
           res.status(201).json('create and update successfully');
         } catch (error) {
           console.error(error);
+          return res.sendStatus(500);
         }
       } else {
         // failed
@@ -165,10 +165,10 @@ const order = async (req, res) => {
           );
           orderTransaction.save();
           // throw error ('stock shares are not enough');
-          res.json('update User failed');
-          throw Error('Your stock shares are fewer than what you have');
+          throw new Error('Your stock shares are fewer than what you have');
         } catch (error) {
           console.error(error);
+          return res.status(400).send({ message: error.message });
         }
       }
     }
