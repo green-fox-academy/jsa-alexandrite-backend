@@ -7,6 +7,7 @@ const {
   investments,
   account,
   watchlists,
+  order,
 } = require('./controller');
 
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -29,6 +30,7 @@ app.use('/investments', investments);
 app.use('/user', user);
 app.use('/account', account);
 app.use('/watchlists', watchlists);
+app.use('/order', order);
 
 app.get('/', (req, res) => {
   res.send('Hello World');
