@@ -39,13 +39,12 @@ const order = async (req, res) => {
     const { sector } = data.company;
     const user = await User.findById(id);
     const { investments, balance } = user;
-    const originalShares = investments.map((investment) => {
-      if (investment.symbol === symbol) {
-        return investment.shares;
-      }
-      return 0;
-    });
-    const originalShare = originalShares[0];
+    const originalStock = investments
+      .filter((investment) => investment.symbol === symbol)[0];
+    let originalShares = 0;
+    if (originalStock) {
+      originalShares = originalStock.shares;
+    }
     // compare shares with orginalShares
     let updatedBalance = 0;
     let updatedShares = 0;
@@ -53,7 +52,7 @@ const order = async (req, res) => {
     if (type === 'buy') {
       if (balance >= stockTotalValue) {
         updatedBalance = balance - stockTotalValue;
-        updatedShares = originalShare + shares;
+        updatedShares = originalShares + shares;
         // update User balance / investment shares & set status to 'settled'
         try {
           const orderTransaction = new Transaction(
@@ -68,17 +67,29 @@ const order = async (req, res) => {
           );
           orderTransaction.save();
           await User.updateOne({ _id: id }, { $set: { balance: updatedBalance } });
-          await User.updateMany(
-            { _id: id, 'investments.symbol': symbol },
-            {
-              $set: {
-                'investments.$.shares': updatedShares,
-                'investments.$.sector': sector,
-                'investments.$.entryPrice': price,
+          const stock = await User.find({ _id: id, 'investments.symbol': symbol });
+          if (stock.length > 0) {
+            await User.updateMany(
+              { _id: id, 'investments.symbol': symbol },
+              {
+                $set: {
+                  'investments.$.shares': updatedShares,
+                  'investments.$.sector': sector,
+                },
+                $inc: {
+                  'investments.$.entryPrice': price * shares,
+                },
               },
-            },
-            { upsert: true },
-          );
+            );
+          } else {
+            const newInvestment = {
+              symbol,
+              shares: updatedShares,
+              sector,
+              entryPrice: price * shares,
+            };
+            await User.updateOne({ _id: id }, { $push: { investments: newInvestment } });
+          }
           res.status(201).json('save and update successfully');
         } catch (error) {
           console.error(error);
@@ -105,9 +116,9 @@ const order = async (req, res) => {
         }
       }
     } else if (type === 'sell') {
-      if (originalShare >= shares) {
+      if (originalShares >= shares) {
         updatedBalance = balance + stockTotalValue;
-        updatedShares = originalShare - shares;
+        updatedShares = originalShares - shares;
         // update User balance / investment shares & set status to 'settled'
         try {
           const orderTransaction = new Transaction(
@@ -128,7 +139,9 @@ const order = async (req, res) => {
               $set: {
                 'investments.$.shares': updatedShares,
                 'investments.$.sector': sector,
-                'investments.$.entryPrice': price,
+              },
+              $inc: {
+                'investments.$.entryPrice': -(shares * price),
               },
             },
             { upsert: true },
