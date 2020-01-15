@@ -17,15 +17,14 @@ account.get('/user', jwtVerifier({ secret }), async (req, res) => {
 });
 
 account.post('/topup', jwtVerifier({ secret }), async (req, res) => {
+  console.log(req);
   try {
     const { id } = req.user;
     const { amount } = req.body;
-    if (amount < 0) {
+    if (amount <= 0) {
       return res.status(400).send('Sorry, top-up amount should be over 0');
     }
-    const { balance } = await User.findById(id, 'balance');
-    const result = balance + amount;
-    await User.updateOne({ _id: id }, { $set: { balance: result } });
+    await User.updateOne({ _id: id }, { $inc: { balance: amount } });
     const topUpTransaction = new Transaction({
       user: id,
       amount,
@@ -33,7 +32,8 @@ account.post('/topup', jwtVerifier({ secret }), async (req, res) => {
       status: 'settled',
     });
     await topUpTransaction.save();
-    return res.json({ balance: result });
+    const balance = await User.findById(id, '-_id balance');
+    return res.json(balance);
   } catch (err) {
     return res.sendStatus(500);
   }

@@ -40,7 +40,9 @@ router.get('/transactions', jwtVerifier({ secret }), async (req, res) => {
   try {
     const { id } = req.user;
     const { limit } = req.query;
-    const transactions = (await Transaction.find({ user: id }).limit(parseInt(limit, 10)))
+    const transactions = (await Transaction.find({ user: id }).limit(parseInt(limit, 10)).sort({
+      timestamp: -1,
+    }))
       .map((trans) => {
         const { _id, ...rest } = trans.toJSON();
         return {
