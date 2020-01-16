@@ -17,7 +17,6 @@ account.get('/user', jwtVerifier({ secret }), async (req, res) => {
 });
 
 account.post('/topup', jwtVerifier({ secret }), async (req, res) => {
-  console.log(req);
   try {
     const { id } = req.user;
     const { amount } = req.body;
