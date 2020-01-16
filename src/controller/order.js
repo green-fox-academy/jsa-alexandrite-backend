@@ -175,8 +175,9 @@ const order = async (req, res) => {
     res.status(201);
   } catch (error) {
     console.error(error);
-    res.status(500);
+    return res.status(500);
   }
+  return res.status(500);
 };
 
 router.post('/', jwtVerifier({ secret }), order);
